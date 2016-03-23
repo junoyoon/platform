@@ -187,6 +187,8 @@ export default {
     GOOGLE_SERVICE: 'google',
     LDAP_SERVICE: 'ldap',
     EMAIL_SERVICE: 'email',
+    LDAP_SERVICE: 'ldap',
+    USERNAME_SERVICE: 'username',
     SIGNIN_CHANGE: 'signin_change',
     SIGNIN_VERIFIED: 'verified',
     SESSION_EXPIRED: 'expired',

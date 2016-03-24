@@ -185,7 +185,6 @@ export default {
     OFFTOPIC_CHANNEL: 'off-topic',
     GITLAB_SERVICE: 'gitlab',
     GOOGLE_SERVICE: 'google',
-    LDAP_SERVICE: 'ldap',
     EMAIL_SERVICE: 'email',
     LDAP_SERVICE: 'ldap',
     USERNAME_SERVICE: 'username',

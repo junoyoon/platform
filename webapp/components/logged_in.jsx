@@ -17,6 +17,7 @@ import {browserHistory} from 'react-router';
 
 import SidebarRight from 'components/sidebar_right.jsx';
 import SidebarRightMenu from 'components/sidebar_right_menu.jsx';
+import Navbar from 'components/navbar.jsx';
 
 // Modals
 import GetPostLinkModal from 'components/get_post_link_modal.jsx';
@@ -186,14 +187,33 @@ export default class LoggedIn extends React.Component {
         $(window).off('keydown.preventBackspace');
     }
     render() {
+        let content = [];
+        if (this.props.children) {
+            content = this.props.children;
+        } else {
+            content.push(
+                this.props.sidebar
+            );
+            content.push(
+                <div className='inner-wrap channel__wrap'>
+                    <div className='row header'>
+                        <div id='navbar'>
+                            <Navbar/>
+                        </div>
+                    </div>
+                    <div className='row main'>
+                        {this.props.center}
+                    </div>
+                </div>
+            );
+        }
         return (
             <div className='channel-view'>
                 <ErrorBar/>
                 <div className='container-fluid'>
                     <SidebarRight/>
                     <SidebarRightMenu/>
-                    {this.props.sidebar}
-                    {this.props.center}
+                    {content}
 
                     <GetPostLinkModal/>
                     <GetTeamInviteLinkModal/>

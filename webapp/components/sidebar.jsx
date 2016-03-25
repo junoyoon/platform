@@ -15,8 +15,8 @@ import TeamStore from 'stores/team_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
 
 import * as AsyncClient from 'utils/async_client.jsx';
-import * as Client from 'utils/client.jsx';
 import * as Utils from 'utils/utils.jsx';
+import * as GlobalActions from 'action_creators/global_actions.jsx';
 
 import Constants from 'utils/constants.jsx';
 
@@ -259,7 +259,7 @@ export default class Sidebar extends React.Component {
         }
 
         if (channel.id === this.state.activeId) {
-            Utils.switchChannel(ChannelStore.getByName(Constants.DEFAULT_CHANNEL));
+            browserHistory.push(TeamStore.getCurrentTeamUrl() + '/channels/town-square');
         }
     }
 
@@ -406,48 +406,6 @@ export default class Sidebar extends React.Component {
             icon = <div className='status'><i className='fa fa-lock'></i></div>;
         }
 
-        // set up click handler to switch channels (or create a new channel for non-existant ones)
-        var handleClick = null;
-
-        if (!channel.fake) {
-            handleClick = function clickHandler(e) {
-                if (e.target.attributes.getNamedItem('data-close')) {
-                    handleClose(channel);
-                } else {
-                    Utils.switchChannel(channel);
-                }
-
-                e.preventDefault();
-            };
-        } else if (channel.fake) {
-            // It's a direct message channel that doesn't exist yet so let's create it now
-            var otherUserId = Utils.getUserIdFromChannelName(channel);
-
-            if (this.state.loadingDMChannel === -1) {
-                handleClick = function clickHandler(e) {
-                    e.preventDefault();
-
-                    if (e.target.attributes.getNamedItem('data-close')) {
-                        handleClose(channel);
-                    } else {
-                        this.setState({loadingDMChannel: index});
-
-                        Client.createDirectChannel(channel, otherUserId,
-                            (data) => {
-                                this.setState({loadingDMChannel: -1});
-                                AsyncClient.getChannel(data.id);
-                                Utils.switchChannel(data);
-                            },
-                            () => {
-                                this.setState({loadingDMChannel: -1});
-                                browserHistory('/' + this.state.currentTeam.name);
-                            }
-                        );
-                    }
-                }.bind(this);
-            }
-        }
-
         let closeButton = null;
         const removeTooltip = (
             <Tooltip id='remove-dm-tooltip'>
@@ -464,12 +422,14 @@ export default class Sidebar extends React.Component {
                     placement='top'
                     overlay={removeTooltip}
                 >
-                <span
-                    className='btn-close'
-                    data-close='true'
-                >
-                    {'×'}
-                </span>
+                    <a
+                        href={'#'}
+                        onClick={() => handleClose(channel)}
+                    >
+                        <span className='btn-close'>
+                            {'×'}
+                        </span>
+                    </a>
                 </OverlayTrigger>
             );
 
@@ -481,6 +441,10 @@ export default class Sidebar extends React.Component {
             tutorialTip = this.createTutorialTip();
         }
 
+        function clickHandler() {
+            GlobalActions.emitChannelClickEvent(channel);
+        }
+
         return (
             <li
                 key={channel.name}
@@ -489,15 +453,14 @@ export default class Sidebar extends React.Component {
             >
                 <a
                     className={rowClass}
-                    href={'#'}
-                    onClick={handleClick}
+                    onClick={clickHandler}
                 >
                     {icon}
                     {status}
                     {channel.display_name}
                     {badge}
-                    {closeButton}
                 </a>
+                {closeButton}
                 {tutorialTip}
             </li>
         );

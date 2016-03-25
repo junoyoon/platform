@@ -7,6 +7,7 @@ import TeamStore from 'stores/team_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
 import * as Utils from 'utils/utils.jsx';
 import * as AsyncClient from 'utils/async_client.jsx';
+import * as GlobalActions from 'action_creators/global_actions.jsx';
 
 import Constants from 'utils/constants.jsx';
 
@@ -34,7 +35,7 @@ export default class TutorialIntroScreens extends React.Component {
             return;
         }
 
-        Utils.switchChannel(ChannelStore.getByName(Constants.DEFAULT_CHANNEL));
+        GlobalActions.emitChannelClickEvent(ChannelStore.getByName(Constants.DEFAULT_CHANNEL));
 
         const step = PreferenceStore.getInt(Preferences.TUTORIAL_STEP, UserStore.getCurrentId(), 0);
 

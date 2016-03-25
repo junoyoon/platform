@@ -14,6 +14,7 @@ import ChannelStore from 'stores/channel_store.jsx';
 import UserStore from 'stores/user_store.jsx';
 
 import * as Utils from 'utils/utils.jsx';
+import * as GlobalActions from 'action_creators/global_actions.jsx';
 
 import {FormattedMessage} from 'react-intl';
 
@@ -29,7 +30,7 @@ export default class CenterPanel extends React.Component {
         super(props);
 
         this.getStateFromStores = this.getStateFromStores.bind(this);
-        this.validState = this.validState.bind(this);
+        this.isStateValid = this.isStateValid.bind(this);
         this.onStoresChange = this.onStoresChange.bind(this);
 
         this.state = this.getStateFromStores();
@@ -40,11 +41,10 @@ export default class CenterPanel extends React.Component {
             showTutorialScreens: tutorialStep <= TutorialSteps.INTRO_SCREENS,
             showPostFocus: ChannelStore.getPostMode() === ChannelStore.POST_MODE_FOCUS,
             user: UserStore.getCurrentUser(),
-            channel: ChannelStore.getCurrent(),
-            profiles: JSON.parse(JSON.stringify(UserStore.getProfiles()))
+            channel: ChannelStore.getCurrent()
         };
     }
-    validState() {
+    isStateValid() {
         return this.state.user && this.state.channel && this.state.profiles;
     }
     onStoresChange() {
@@ -76,7 +76,7 @@ export default class CenterPanel extends React.Component {
 
             handleClick = function clickHandler(e) {
                 e.preventDefault();
-                Utils.switchChannel(channel);
+                GlobalActions.emitChannelClickEvent(channel);
             };
 
             createPost = (
@@ -94,46 +94,12 @@ export default class CenterPanel extends React.Component {
                 </div>
             );
         } else {
-            postsContainer = <PostsViewContainer profiles={this.state.profiles}/>;
-            createPost = (
-                <div
-                    className='post-create__container'
-                    id='post-create'
-                >
-                    <CreatePost/>
-                </div>
             );
         }
 
         return (
-            <div className='inner-wrap channel__wrap'>
-                <div className='row header'>
-                    <div id='navbar'>
-                        <Navbar/>
-                    </div>
-                </div>
-                <div className='row main'>
-                    <FileUploadOverlay
-                        id='file_upload_overlay'
-                        overlayType='center'
-                    />
-                    <div
-                        id='app-content'
-                        className='app__content'
-                    >
-                        <div
-                            id='channel-header'
-                            className='channel-header'
-                        >
-                            <ChannelHeader
-                                user={this.state.user}
-                            />
-                        </div>
-                        {postsContainer}
-                        {createPost}
-                    </div>
-                </div>
-            </div>
+            {postsContainer}
+            {createPost}
         );
     }
 }

@@ -5,6 +5,7 @@ import AppDispatcher from '../dispatcher/app_dispatcher.jsx';
 import ChannelStore from 'stores/channel_store.jsx';
 import PostStore from 'stores/post_store.jsx';
 import SearchStore from 'stores/search_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
 import Constants from 'utils/constants.jsx';
 const ActionTypes = Constants.ActionTypes;
 import * as AsyncClient from 'utils/async_client.jsx';
@@ -13,20 +14,53 @@ import * as Utils from 'utils/utils.jsx';
 import * as Websockets from './websocket_actions.jsx';
 import * as I18n from 'i18n/i18n.jsx';
 
+import {browserHistory} from 'react-router';
+
 import en from 'i18n/en.json';
 
 export function emitChannelClickEvent(channel) {
-    AsyncClient.getChannels(true);
-    AsyncClient.getChannelExtraInfo(channel.id);
-    AsyncClient.updateLastViewedAt(channel.id);
-    AsyncClient.getPosts(channel.id);
+    function userVisitedFakeChannel(chan, success, fail) {
+        const otherUserId = Utils.getUserIdFromChannelName(chan);
+        Client.createDirectChannel(
+            chan,
+            otherUserId,
+            (data) => {
+                success(data);
+            },
+            () => {
+                fail();
+            }
+        );
+    }
+    function switchToChannel(chan) {
+        AsyncClient.getChannels(true);
+        AsyncClient.getChannelExtraInfo(chan.id);
+        AsyncClient.updateLastViewedAt(chan.id);
+        AsyncClient.getPosts(chan.id);
+        Client.trackPage();
 
-    AppDispatcher.handleViewAction({
-        type: ActionTypes.CLICK_CHANNEL,
-        name: channel.name,
-        id: channel.id,
-        prev: ChannelStore.getCurrentId()
-    });
+        AppDispatcher.handleViewAction({
+            type: ActionTypes.CLICK_CHANNEL,
+            name: chan.name,
+            id: chan.id,
+            prev: ChannelStore.getCurrentId()
+        });
+        browserHistory.push(TeamStore.getCurrentTeamUrl() + '/channels/' + chan.name);
+    }
+
+    if (channel.fake) {
+        userVisitedFakeChannel(
+            channel,
+            (data) => {
+                switchToChannel(data);
+            },
+            () => {
+                browserHistory.push('/' + this.state.currentTeam.name);
+            }
+        );
+    } else {
+        switchToChannel(channel);
+    }
 }
 
 export function emitPostFocusEvent(postId) {
@@ -291,3 +325,4 @@ export function emitRemoteUserTypingEvent(channelId, userId, postParentId) {
         postParentId
     });
 }
+

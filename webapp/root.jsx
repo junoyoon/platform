@@ -138,19 +138,6 @@ function preLoggedIn(nextState, replace, callback) {
     $.when(d1, d2).done(() => callback());
 }
 
-function onChannelChange(nextState) {
-    const channelName = nextState.params.channel;
-
-    // Make sure we have all the channels
-    AsyncClient.getChannels(true);
-
-    // Get our channel's ID
-    const channel = ChannelStore.getByName(channelName);
-
-    // User clicked channel
-    GlobalActions.emitChannelClickEvent(channel);
-}
-
 function onRootEnter(nextState, replace, callback) {
     if (nextState.location.pathname === '/') {
         Client.getMeLoggedIn((data) => {
@@ -206,7 +193,6 @@ function renderRootComponent() {
                 >
                     <Route
                         path=':team/channels/:channel'
-                        onEnter={onChannelChange}
                         components={{
                             sidebar: Sidebar,
                             center: ChannelView
@@ -223,17 +209,10 @@ function renderRootComponent() {
                     <Route
                         path=':team/logout'
                         onEnter={onLoggedOut}
-                        components={{
-                            sidebar: null,
-                            center: null
-                        }}
                     />
                     <Route
                         path='admin_console'
-                        components={{
-                            sidebar: null,
-                            center: AdminConsole
-                        }}
+                        component={AdminConsole}
                     />
                 </Route>
                 <Route component={NotLoggedIn}>
